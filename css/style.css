@@ -1,0 +1,584 @@
+:root {
+  --bg: #000000;
+  --green: #16e838;
+  --green-faint: #16e83855;
+  --font-body: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --edge: clamp(24px, 4vw, 64px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--green);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+body > main {
+  flex: 1;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+::selection {
+  background: var(--green);
+  color: #000;
+}
+
+:focus-visible {
+  outline: 1px solid var(--green);
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ---------- Header ---------- */
+
+.site-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: clamp(20px, 3vw, 44px) var(--edge) 0;
+}
+
+.site-header .logo {
+  grid-column: 2;
+  justify-self: center;
+}
+
+.site-header .logo img {
+  height: clamp(34px, 3.4vw, 50px);
+  width: auto;
+}
+
+/* ---------- Home grid ---------- */
+
+main.home {
+  position: relative;
+  padding: clamp(20px, 2.5vw, 40px) var(--edge);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+
+/* Flechas del carrusel (solo escritorio) */
+.carousel-arrow {
+  display: none;
+}
+
+@media (min-width: 861px) {
+  .carousel-arrow {
+    display: block;
+    position: absolute;
+    top: 45%;
+    transform: translateY(-50%);
+    z-index: 1;
+    padding: 8px;
+    background: none;
+    border: 0;
+    color: var(--green);
+    font-family: inherit;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.75;
+    transition: opacity 0.3s ease;
+  }
+
+  .carousel-arrow:hover {
+    opacity: 1;
+  }
+
+  .carousel-arrow[disabled] {
+    opacity: 0.15;
+    cursor: default;
+  }
+
+  .carousel-arrow--prev {
+    left: clamp(8px, 1.2vw, 24px);
+  }
+
+  .carousel-arrow--next {
+    right: clamp(8px, 1.2vw, 24px);
+  }
+}
+
+.wine-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: clamp(20px, 3vw, 48px);
+  row-gap: clamp(40px, 5vw, 72px);
+}
+
+/* Desktop: carrusel con scroll lateral (barra nativa oculta) */
+@media (min-width: 861px) {
+  /* Full-bleed: el área de scroll llega hasta los bordes de la ventana
+     (contrarresta el padding de main.home) y el margen --edge pasa a ser
+     padding interno, para que las botellas no se corten contra un borde
+     invisible antes de llegar al final. */
+  .wine-grid {
+    display: flex;
+    overflow-x: auto;
+    gap: clamp(20px, 3vw, 48px);
+    margin-inline: calc(-1 * var(--edge));
+    padding-inline: var(--edge);
+    scrollbar-width: none;
+  }
+
+  .wine-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* El lateral de la tarjeta también está limitado por la altura de la
+     ventana: la imagen es cuadrada, así que capándolo a 100vh menos el
+     espacio de header, textos y footer todo entra en pantalla. */
+  .wine-card {
+    flex: 0 0 min(clamp(250px, 26vw, 380px), calc(100vh - 340px));
+  }
+}
+
+@media (max-width: 860px) and (min-width: 621px) {
+  .wine-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 620px) {
+  .wine-grid {
+    grid-template-columns: 1fr;
+    row-gap: 80px;
+  }
+}
+
+.wine-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.wine-card__bottle {
+  width: 100%;
+  max-width: 390px;
+  margin-bottom: clamp(18px, 2.2vw, 32px);
+  transition: transform 0.35s ease;
+}
+
+.wine-card:hover .wine-card__bottle,
+.wine-card:focus-visible .wine-card__bottle {
+  transform: translateY(-6px);
+}
+
+.wine-card__name {
+  font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.wine-card__uva {
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+.wine-card__meta {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin-top: 9px;
+}
+
+/* ---------- Wine detail page ---------- */
+
+main.detail {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: clamp(32px, 5vw, 56px) var(--edge) clamp(48px, 7vw, 72px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.detail__bottle {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 0 clamp(12px, 2.2vw, 24px);
+}
+
+.detail__name {
+  font-size: clamp(1.35rem, 2.2vw, 2rem);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  margin: 0 0 clamp(16px, 2.2vw, 28px);
+}
+
+.detail__description {
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1.35;
+  max-width: 68ch;
+  margin: 0 0 clamp(18px, 2.6vw, 30px);
+}
+
+.detail__facts {
+  font-size: 0.6rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  line-height: 1.45;
+  margin: 0 0 clamp(18px, 2.6vw, 30px);
+}
+
+.detail__facts strong {
+  font-weight: 700;
+}
+
+.detail__specs {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.detail__info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@media (min-width: 861px) {
+  main.detail {
+    max-width: none;
+    padding-top: 0;
+    padding-bottom: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    column-gap: clamp(32px, 4vw, 80px);
+  }
+
+  .detail__bottle {
+    max-width: min(33vw, 495px, calc(100vh - 200px));
+    justify-self: center;
+    margin: 0;
+  }
+
+  .detail__info {
+    justify-self: center;
+    max-width: 460px;
+  }
+}
+
+/* ---------- Footer ---------- */
+
+.site-footer {
+  padding: 18px var(--edge) 22px;
+  text-align: center;
+  font-size: 0.55rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1.7;
+}
+
+/* Escritorio: todo en una línea */
+.footer-break {
+  display: none;
+}
+
+/* Móvil: sin "Vino honesto, sin nada añadido" y salto de línea
+   forzado tras "Galicia" (queda: dirección / contacto, en 2 líneas). */
+@media (max-width: 860px) {
+  .footer-tagline {
+    display: none;
+  }
+
+  .footer-break {
+    display: block;
+    content: "";
+  }
+
+  .footer-sep {
+    display: none;
+  }
+}
+
+/* ---------- Nutrition info page ---------- */
+
+/* Fondo propio, algo más claro que el negro del resto del sitio: así
+   la ficha (que va en negro puro, igual que el fondo de las fotos) se
+   distingue sin necesitar un borde. */
+body.nutrition-page {
+  --bg: #101010;
+}
+
+main.nutrition {
+  position: relative;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: clamp(24px, 4vw, 40px) var(--edge) clamp(32px, 5vw, 48px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+@media (min-width: 861px) {
+  main.nutrition {
+    max-width: none;
+    /* Width explícito: sin esto, el ancho de main.nutrition pasa a
+       depender del contenido de .nutrition-grid (todas las fichas en
+       fila) en vez de ajustarse al viewport, y el carrusel deja de
+       recortarse/hacer scroll. */
+    width: 100%;
+    min-width: 0;
+    padding-top: 0;
+    padding-bottom: 12px;
+    /* "stretch" en vez de "center": si no, .nutrition-grid tampoco se
+       ajusta al ancho de main. */
+    align-items: stretch;
+    justify-content: center;
+    min-height: calc(100vh - 145px);
+  }
+}
+
+.nutrition-grid {
+  width: 100%;
+}
+
+/* Escritorio: carrusel horizontal, igual que la home (wine-grid) */
+@media (min-width: 861px) {
+  .nutrition-grid {
+    display: flex;
+    align-items: stretch;
+    overflow-x: auto;
+    gap: clamp(16px, 2vw, 32px);
+    margin-inline: calc(-1 * var(--edge));
+    padding-inline: var(--edge);
+    scrollbar-width: none;
+    /* Sin esto, un hijo flex con overflow-x:auto empuja el ancho de
+       main.nutrition (su padre, flex-direction:column) en vez de
+       recortarse y hacer scroll interno. */
+    min-width: 0;
+  }
+
+  .nutrition-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Las flechas del carrusel usan position:absolute anclado a este
+     main; fijarlas (fixed) las mantiene siempre visibles. */
+  main.nutrition .carousel-arrow {
+    position: fixed;
+    top: 50%;
+  }
+}
+
+/* Cada vino como una "ficha" tipo ticket: esquinas redondeadas arriba,
+   muescas circulares a los lados. La ficha va en negro puro sobre el
+   --bg algo más claro de esta página, así se distingue sin necesitar
+   borde; las muescas "perforan" en el color de --bg para parecer un
+   recorte real. Todo a escala compacta (clamps en vh) para que cada
+   ficha, y la fila entera en escritorio, quepan sin scroll vertical.
+   Sans-serif: hereda --font-body, no monoespaciada. */
+.nutrition-entry {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto clamp(20px, 3.6vh, 34px);
+  padding: clamp(15px, 2.6vh, 24px) clamp(19px, 3vw, 26px) clamp(17px, 2.7vh, 25px);
+  background: #000;
+  /* Las 4 esquinas iguales. */
+  border-radius: 16px;
+  text-align: left;
+  scroll-margin-top: 24px;
+}
+
+.nutrition-entry::before,
+.nutrition-entry::after {
+  content: "";
+  position: absolute;
+  top: clamp(178px, 27.5vh, 266px);
+  width: 18px;
+  height: 18px;
+  background: var(--bg);
+  border-radius: 50%;
+}
+
+.nutrition-entry::before {
+  left: -9px;
+}
+
+.nutrition-entry::after {
+  right: -9px;
+}
+
+@media (min-width: 861px) {
+  .nutrition-entry {
+    flex: 0 0 clamp(270px, 29vw, 360px);
+    margin: 0;
+  }
+}
+
+.nutrition__bottle {
+  width: 100%;
+  max-width: clamp(150px, 25vh, 226px);
+  margin: 0 auto clamp(11px, 1.8vh, 16px);
+}
+
+.ticket-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 clamp(9px, 1.4vh, 14px);
+}
+
+.nutrition__name {
+  font-size: clamp(0.86rem, 1.8vh, 1rem);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+/* [Tipo] + añada/alcohol como anotación pequeña junto al nombre, en
+   vez de una fila propia debajo. */
+.ticket-annotation {
+  flex-shrink: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  text-align: right;
+  white-space: nowrap;
+  font-size: clamp(0.44rem, 0.9vh, 0.49rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--green-dim, var(--green));
+  opacity: 0.8;
+}
+
+.ticket-divider {
+  height: 1px;
+  background: var(--green);
+  margin: clamp(9px, 1.6vh, 14px) 0 clamp(12px, 2vh, 18px);
+}
+
+.nutrition__pending {
+  font-size: 0.62rem;
+  letter-spacing: 0.03em;
+  color: var(--green-faint);
+}
+
+.nutrition-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(0.58rem, 1.2vh, 0.66rem);
+}
+
+.nutrition-table th,
+.nutrition-table td {
+  padding: clamp(4px, 0.85vh, 7px) 2px;
+  border-bottom: 1px solid var(--green-faint);
+  text-align: left;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.nutrition-table td,
+.nutrition-table th[scope="col"]:not(:first-child) {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.nutrition-table thead th {
+  font-size: clamp(0.47rem, 0.9vh, 0.53rem);
+  letter-spacing: 0.03em;
+  font-weight: 700;
+  border-bottom: 3px solid var(--green);
+  padding-bottom: clamp(4px, 0.7vh, 5px);
+}
+
+/* Saturadas / Azúcar van indentadas y sin negrita bajo Grasas /
+   Carbohidratos, igual que en una etiqueta nutricional real. */
+.nutrition-table .sub-row th {
+  padding-left: 13px;
+  font-weight: 400;
+  opacity: 0.85;
+}
+
+.nutrition__note {
+  font-size: 0.5rem;
+  color: var(--green-faint);
+  line-height: 1.4;
+  margin-top: clamp(7px, 1vh, 10px);
+}
+
+.ticket-ingredientes {
+  font-size: 0.51rem;
+  letter-spacing: 0.01em;
+  color: var(--green-faint);
+  line-height: 1.4;
+  margin-top: clamp(5px, 0.85vh, 8px);
+}
+
+.ticket-ingredientes strong {
+  color: var(--green);
+  font-weight: 700;
+}
+
+.ticket-uva {
+  font-size: 0.53rem;
+  letter-spacing: 0.03em;
+  color: var(--green-faint);
+  margin: clamp(10px, 1.7vh, 15px) 0 0;
+  padding-top: clamp(8px, 1.4vh, 12px);
+  border-top: 1px solid var(--green-faint);
+}
+
+/* ---------- Not found state ---------- */
+
+.not-found {
+  text-align: center;
+  padding: 80px var(--edge);
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.not-found a {
+  border-bottom: 1px solid var(--green-faint);
+  padding-bottom: 2px;
+}
+
+.not-found a:hover {
+  border-color: var(--green);
+}

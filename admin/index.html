@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TACHÍN — Panel</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --sidebar-bg: #101110;
+    --card-bg: #161816;
+    --card-bg-hover: #1c1f1c;
+    --border: #ffffff14;
+    --border-soft: #ffffff0a;
+    --green: #16e838;
+    --green-dim: #16e838cc;
+    --green-faint: #16e83833;
+    --green-wash: #16e8381a;
+    --text: #eef2ee;
+    --text-dim: #9aa39a;
+    --text-faint: #6b756b;
+    --danger: #ff5c5c;
+    --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    display: flex;
+    min-height: 100vh;
+  }
+  a { color: inherit; }
+  img { max-width: 100%; display: block; }
+
+  /* ---------------- Sidebar ---------------- */
+  .sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 10px 24px;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+  }
+  .brand__dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green);
+    flex-shrink: 0;
+  }
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .nav a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    text-decoration: none;
+    color: var(--text-dim);
+  }
+  .nav a svg { flex-shrink: 0; opacity: 0.8; }
+  .nav a.active {
+    background: var(--green-wash);
+    color: var(--green);
+    font-weight: 700;
+  }
+  .nav a.active svg { opacity: 1; }
+  .nav a:not(.active):hover {
+    background: #ffffff0a;
+    color: var(--text);
+  }
+  .sidebar__foot {
+    margin-top: auto;
+    padding: 10px 12px;
+    font-size: 0.68rem;
+    color: var(--text-faint);
+    line-height: 1.6;
+  }
+
+  /* ---------------- Main ---------------- */
+  .main {
+    flex: 1;
+    min-width: 0;
+    padding: 32px 40px 80px;
+  }
+  .breadcrumb {
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    letter-spacing: 0.03em;
+    margin-bottom: 6px;
+  }
+  .breadcrumb .current { color: var(--text-dim); }
+  .page-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .page-head h1 {
+    font-size: 1.7rem;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .page-head p {
+    margin: 4px 0 0;
+    font-size: 0.8rem;
+    color: var(--text-faint);
+  }
+
+  button {
+    font-family: var(--font);
+    cursor: pointer;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 0;
+    border-radius: 9px;
+    padding: 11px 18px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--green);
+    color: #06170a;
+  }
+  .btn-primary:hover { background: #3bf258; }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+  .btn-ghost:hover { border-color: var(--green-faint); color: var(--text); }
+  .btn:disabled { opacity: 0.5; cursor: default; }
+
+  /* ---------------- Card grid ---------------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 18px;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .card:hover {
+    background: var(--card-bg-hover);
+    border-color: var(--border);
+  }
+  .card__image {
+    aspect-ratio: 1 / 1;
+    background: #000;
+    border-radius: 9px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card__image img { width: 100%; height: 100%; object-fit: contain; }
+  .badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 4px 9px;
+    border-radius: 100px;
+    background: var(--green-wash);
+    color: var(--green-dim);
+  }
+  .badge::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .badge.tipo-blanco {
+    background: #ffffff12;
+    color: #d8dcd8;
+  }
+  .card__name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .card__meta {
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    margin-bottom: 14px;
+  }
+  .card__actions {
+    margin-top: auto;
+    display: flex;
+    gap: 8px;
+    border-top: 1px solid var(--border-soft);
+    padding-top: 12px;
+  }
+  .icon-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+  .icon-btn:hover { border-color: var(--green-faint); color: var(--text); }
+  .icon-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+  .empty-state, .error-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 64px 20px;
+    color: var(--text-faint);
+    font-size: 0.85rem;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+  }
+
+  /* ---------------- Modal ---------------- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: #000000b0;
+    backdrop-filter: blur(2px);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 16px;
+    overflow-y: auto;
+    z-index: 100;
+  }
+  .modal-overlay.is-open { display: flex; }
+  .modal {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 560px;
+    padding: 28px;
+  }
+  .modal__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .modal__head h2 {
+    font-size: 1.05rem;
+    margin: 0;
+  }
+  .modal__close {
+    background: transparent;
+    border: 0;
+    color: var(--text-faint);
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 4px;
+  }
+  .modal__close:hover { color: var(--text); }
+
+  .dropzone {
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    padding: 28px 16px;
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .dropzone.is-dragover {
+    border-color: var(--green);
+    background: var(--green-wash);
+  }
+  .dropzone img {
+    max-width: 140px;
+    max-height: 140px;
+    display: block;
+    margin: 0 auto 10px;
+    border-radius: 6px;
+  }
+  .dropzone input[type="file"] { display: none; }
+
+  label {
+    display: block;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin: 16px 0 6px;
+  }
+  label:first-of-type { margin-top: 0; }
+  .section-divider {
+    margin: 26px 0 4px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-dim);
+  }
+  .field-note {
+    font-size: 0.66rem;
+    color: var(--text-faint);
+    margin: 10px 0 0;
+    line-height: 1.5;
+  }
+  input[type="text"], select, textarea {
+    width: 100%;
+    background: #000;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 0.85rem;
+    padding: 10px 12px;
+    border-radius: 8px;
+  }
+  input[readonly] { color: var(--text-faint); }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--green-faint);
+  }
+  textarea { min-height: 90px; resize: vertical; }
+  .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .field-hint {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 0.62rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--green-dim);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .modal__actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .modal__actions .btn { flex: 1; justify-content: center; }
+
+  /* ---------------- Toast ---------------- */
+  .toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    max-width: 320px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green);
+    border-radius: 10px;
+    padding: 13px 16px;
+    font-size: 0.8rem;
+    z-index: 200;
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .toast.is-visible { opacity: 1; transform: translateY(0); }
+  .toast.error { border-left-color: var(--danger); }
+
+  /* ---------------- Responsive ---------------- */
+  @media (max-width: 760px) {
+    body { flex-direction: column; }
+    .sidebar {
+      width: 100%;
+      flex-direction: row;
+      align-items: center;
+      padding: 14px 16px;
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand { padding: 0; }
+    .nav { flex-direction: row; margin-left: auto; }
+    .sidebar__foot { display: none; }
+    .main { padding: 24px 16px 60px; }
+    .page-head { flex-direction: column; align-items: flex-start; }
+    .page-head .btn { width: 100%; justify-content: center; }
+    .row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="brand"><span class="brand__dot"></span> Tachín</div>
+    <nav class="nav">
+      <a href="/admin" class="active">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 22V10l9-6 9 6v12h-6v-7H9v7H3Z"/></svg>
+        Vinos
+      </a>
+      <a href="/" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3h7v7M21 3l-9 9M5 5h6M5 5v14h14v-6"/></svg>
+        Ver sitio
+      </a>
+    </nav>
+    <div class="sidebar__foot">Panel local — escribe directamente en el catálogo (Vercel Blob).</div>
+  </aside>
+
+  <main class="main">
+    <div class="breadcrumb">Panel / <span class="current">Vinos</span></div>
+    <div class="page-head">
+      <div>
+        <h1>Vinos</h1>
+        <p id="count-label">Cargando catálogo…</p>
+      </div>
+      <button class="btn btn-primary" id="open-add">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Añadir vino
+      </button>
+    </div>
+
+    <div class="grid" id="catalog">
+      <div class="empty-state">Cargando…</div>
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal__head">
+        <h2 id="modal-title">Añadir vino</h2>
+        <button class="modal__close" id="modal-close" aria-label="Cerrar">✕</button>
+      </div>
+
+      <form id="wine-form">
+        <div class="dropzone" id="dropzone">
+          <div id="dropzone-content">Arrastra aquí el GIF/imagen de la botella<br />o haz clic para elegirlo</div>
+          <input type="file" id="file-input" accept="image/*" />
+        </div>
+
+        <label for="id-field">Id (url / QR — fijo al editar)</label>
+        <input type="text" id="id-field" readonly placeholder="se genera solo a partir del nombre" />
+
+        <label for="nombre">Nombre del vino</label>
+        <input type="text" id="nombre" required placeholder="Ej. Meniña" />
+
+        <label for="tipo">Tipo</label>
+        <select id="tipo">
+          <option value="Vino tinto">Vino tinto</option>
+          <option value="Vino blanco">Vino blanco</option>
+        </select>
+
+        <label for="uva">Uva (ficha del vino)</label>
+        <input type="text" id="uva" required placeholder="Ej. Mencía 100% | Cepas centenarias" />
+
+        <label for="uva-corta">Uva (home, mayúsculas) <span class="field-hint" id="copy-uva">usar igual que arriba</span></label>
+        <input type="text" id="uva-corta" required placeholder="Ej. 100% MENCÍA" />
+
+        <div class="row">
+          <div>
+            <label for="anada">Añada</label>
+            <input type="text" id="anada" required placeholder="2024" />
+          </div>
+          <div>
+            <label for="alcohol">Alcohol (%)</label>
+            <input type="text" id="alcohol" required placeholder="13" />
+          </div>
+          <div>
+            <label for="volumen">Volumen (ml)</label>
+            <input type="text" id="volumen" value="750" />
+          </div>
+        </div>
+
+        <label for="sulfitos">Sulfitos</label>
+        <select id="sulfitos">
+          <option value="SIN SULFITOS AÑADIDOS">Sin sulfitos añadidos</option>
+          <option value="CONTIENE SULFITOS">Contiene sulfitos</option>
+        </select>
+
+        <label for="descripcion">Descripción (etiqueta / ficha técnica)</label>
+        <textarea id="descripcion" required placeholder="Hecho 100% con uva de variedad..."></textarea>
+
+        <div class="section-divider">Información nutricional (por 100 ml) — opcional</div>
+
+        <div class="row">
+          <div>
+            <label for="n-calorias">Calorías (Kcal)</label>
+            <input type="text" id="n-calorias" placeholder="80" />
+          </div>
+          <div>
+            <label for="n-grasas">Grasas (g)</label>
+            <input type="text" id="n-grasas" placeholder="0" />
+          </div>
+          <div>
+            <label for="n-saturadas">Saturadas (g)</label>
+            <input type="text" id="n-saturadas" placeholder="0" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="n-carbohidratos">Carbohidratos (g)</label>
+            <input type="text" id="n-carbohidratos" placeholder="0,9" />
+          </div>
+          <div>
+            <label for="n-azucar">Azúcar (g)</label>
+            <input type="text" id="n-azucar" placeholder="0,3" />
+          </div>
+          <div>
+            <label for="n-proteinas">Proteínas (g)</label>
+            <input type="text" id="n-proteinas" placeholder="0,01" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="n-sal">Sal (g)</label>
+            <input type="text" id="n-sal" placeholder="0" />
+          </div>
+        </div>
+        <p class="field-note">
+          El alcohol de la tabla nutricional se toma solo del campo "Alcohol (%)" de arriba, y el
+          valor energético en kJ se calcula solo a partir de las calorías (no hace falta
+          rellenarlo aparte). La columna de 150 ml (copa de referencia) también se calcula sola —
+          no hace falta rellenarla. Deja estos campos vacíos si aún no tienes el dato: la página
+          no mostrará números inventados, solo "pendiente de confirmar". Unidades en gramos (g),
+          como exige el etiquetado nutricional en la UE — Proteínas y Sal ya no van en mg.
+        </p>
+
+        <div class="modal__actions">
+          <button type="button" class="btn btn-ghost" id="modal-cancel">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="submit-btn">Añadir vino</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  const catalogEl = document.getElementById("catalog");
+  const countLabel = document.getElementById("count-label");
+  const overlay = document.getElementById("modal-overlay");
+  const modalTitle = document.getElementById("modal-title");
+  const form = document.getElementById("wine-form");
+  const submitBtn = document.getElementById("submit-btn");
+  const dropzone = document.getElementById("dropzone");
+  const dropzoneContent = document.getElementById("dropzone-content");
+  const fileInput = document.getElementById("file-input");
+  const idField = document.getElementById("id-field");
+  const nombreInput = document.getElementById("nombre");
+  const uvaInput = document.getElementById("uva");
+  const uvaCortaInput = document.getElementById("uva-corta");
+  const toast = document.getElementById("toast");
+
+  const DROP_PLACEHOLDER = "Arrastra aquí el GIF/imagen de la botella<br />o haz clic para elegirlo";
+
+  let imageBase64 = null;
+  let imageName = null;
+  let editingId = null;
+  let toastTimer = null;
+
+  // ---------- Toast ----------
+  function showToast(text, type) {
+    toast.textContent = text;
+    toast.className = "toast is-visible" + (type === "error" ? " error" : "");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 3200);
+  }
+
+  // ---------- Modal ----------
+  function openModal() {
+    overlay.classList.add("is-open");
+    document.body.style.overflow = "hidden";
+  }
+  function closeModal() {
+    overlay.classList.remove("is-open");
+    document.body.style.overflow = "";
+    stopEdit();
+  }
+  document.getElementById("modal-close").addEventListener("click", closeModal);
+  document.getElementById("modal-cancel").addEventListener("click", closeModal);
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) closeModal();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && overlay.classList.contains("is-open")) closeModal();
+  });
+  document.getElementById("open-add").addEventListener("click", () => {
+    stopEdit();
+    openModal();
+  });
+
+  // ---------- Dropzone ----------
+  function resetDropzone() {
+    imageBase64 = null;
+    imageName = null;
+    dropzoneContent.innerHTML = DROP_PLACEHOLDER;
+  }
+  function showImagePreview(file, captionSuffix) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      imageBase64 = reader.result;
+      imageName = file.name;
+      dropzoneContent.innerHTML = "";
+      const img = document.createElement("img");
+      img.src = reader.result;
+      const caption = document.createElement("div");
+      caption.textContent = file.name + (captionSuffix || " — clic para cambiarla");
+      dropzoneContent.appendChild(img);
+      dropzoneContent.appendChild(caption);
+    };
+    reader.readAsDataURL(file);
+  }
+  dropzone.addEventListener("click", () => fileInput.click());
+  fileInput.addEventListener("change", () => {
+    if (fileInput.files[0]) showImagePreview(fileInput.files[0]);
+  });
+  ["dragenter", "dragover"].forEach((evt) =>
+    dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.add("is-dragover"); })
+  );
+  ["dragleave", "drop"].forEach((evt) =>
+    dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.remove("is-dragover"); })
+  );
+  dropzone.addEventListener("drop", (e) => {
+    const file = e.dataTransfer.files[0];
+    if (file) showImagePreview(file);
+  });
+
+  document.getElementById("copy-uva").addEventListener("click", () => {
+    uvaCortaInput.value = uvaInput.value.toUpperCase();
+  });
+
+  // ---------- Form fill / reset ----------
+  function fillForm(wine) {
+    idField.value = wine.id;
+    nombreInput.value = wine.nombre;
+    document.getElementById("tipo").value = wine.tipo;
+    uvaInput.value = wine.uva;
+    uvaCortaInput.value = wine.uvaCorta;
+    document.getElementById("anada").value = wine.anada;
+    document.getElementById("alcohol").value = wine.alcohol;
+    document.getElementById("volumen").value = wine.volumen;
+    document.getElementById("sulfitos").value = wine.sulfitos;
+    document.getElementById("descripcion").value = wine.descripcion;
+    document.getElementById("n-calorias").value = wine.calorias || "";
+    document.getElementById("n-grasas").value = wine.grasas || "";
+    document.getElementById("n-saturadas").value = wine.saturadas || "";
+    document.getElementById("n-carbohidratos").value = wine.carbohidratos || "";
+    document.getElementById("n-azucar").value = wine.azucar || "";
+    document.getElementById("n-proteinas").value = wine.proteinas || "";
+    document.getElementById("n-sal").value = wine.sal || "";
+    dropzoneContent.innerHTML = "";
+    const img = document.createElement("img");
+    img.src = wine.bottle;
+    const caption = document.createElement("div");
+    caption.textContent = "Imagen actual — arrastra otra para sustituirla";
+    dropzoneContent.appendChild(img);
+    dropzoneContent.appendChild(caption);
+    imageBase64 = null;
+    imageName = null;
+  }
+
+  function startEdit(wine) {
+    editingId = wine.id;
+    fillForm(wine);
+    modalTitle.textContent = "Editar vino";
+    submitBtn.textContent = "Guardar cambios";
+    openModal();
+  }
+
+  function stopEdit() {
+    editingId = null;
+    form.reset();
+    idField.value = "";
+    document.getElementById("volumen").value = "750";
+    resetDropzone();
+    modalTitle.textContent = "Añadir vino";
+    submitBtn.textContent = "Añadir vino";
+  }
+
+  // ---------- Catálogo ----------
+  function badgeClass(tipo) {
+    return /blanco/i.test(tipo) ? "badge tipo-blanco" : "badge";
+  }
+
+  async function loadCatalog() {
+    try {
+      const res = await fetch("/api/wines");
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+
+      countLabel.textContent = data.wines.length
+        ? `${data.wines.length} vino${data.wines.length === 1 ? "" : "s"} en el catálogo`
+        : "Todavía no hay vinos";
+
+      if (!data.wines.length) {
+        catalogEl.innerHTML = '<div class="empty-state">Todavía no hay vinos. Añade el primero.</div>';
+        return;
+      }
+
+      catalogEl.innerHTML = "";
+      data.wines.forEach((wine) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="card__image"><img src="${wine.bottle}" alt="${wine.nombre}" loading="lazy" /></div>
+          <div class="badges">
+            <span class="${badgeClass(wine.tipo)}">${wine.tipo}</span>
+          </div>
+          <div class="card__name">${wine.nombre}</div>
+          <div class="card__meta">${wine.anada} · ${wine.alcohol}% vol · ${wine.id}</div>
+          <div class="card__actions">
+            <button type="button" class="icon-btn edit">Editar</button>
+            <button type="button" class="icon-btn danger delete">Eliminar</button>
+          </div>
+        `;
+        card.querySelector(".edit").addEventListener("click", () => startEdit(wine));
+        card.querySelector(".delete").addEventListener("click", () => removeWine(wine));
+        catalogEl.appendChild(card);
+      });
+    } catch (err) {
+      countLabel.textContent = "";
+      catalogEl.innerHTML = '<div class="error-state">No se pudo cargar el catálogo.</div>';
+    }
+  }
+
+  async function removeWine(wine) {
+    if (!confirm(`¿Eliminar "${wine.nombre}"? Se borrará también su imagen. No se puede deshacer.`)) return;
+    try {
+      const res = await fetch("/api/wines/" + encodeURIComponent(wine.id), { method: "DELETE" });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      if (editingId === wine.id) closeModal();
+      showToast(`Eliminado "${wine.nombre}".`);
+      loadCatalog();
+    } catch (err) {
+      showToast(err.message || "Error al eliminar el vino.", "error");
+    }
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if (!editingId && !imageBase64) {
+      showToast("Falta la imagen de la botella.", "error");
+      return;
+    }
+
+    const payload = {
+      nombre: nombreInput.value.trim(),
+      tipo: document.getElementById("tipo").value,
+      uva: uvaInput.value.trim(),
+      uvaCorta: uvaCortaInput.value.trim(),
+      anada: document.getElementById("anada").value.trim(),
+      alcohol: document.getElementById("alcohol").value.trim(),
+      volumen: document.getElementById("volumen").value.trim(),
+      sulfitos: document.getElementById("sulfitos").value,
+      descripcion: document.getElementById("descripcion").value.trim(),
+      calorias: document.getElementById("n-calorias").value.trim(),
+      grasas: document.getElementById("n-grasas").value.trim(),
+      saturadas: document.getElementById("n-saturadas").value.trim(),
+      carbohidratos: document.getElementById("n-carbohidratos").value.trim(),
+      azucar: document.getElementById("n-azucar").value.trim(),
+      proteinas: document.getElementById("n-proteinas").value.trim(),
+      sal: document.getElementById("n-sal").value.trim(),
+      imageBase64,
+      imageName,
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = editingId ? "Guardando…" : "Añadiendo…";
+
+    try {
+      const url = editingId ? "/api/wines/" + encodeURIComponent(editingId) : "/api/wines";
+      const method = editingId ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+
+      showToast(editingId ? `Guardado "${data.wine.nombre}".` : `Añadido "${data.wine.nombre}".`);
+      closeModal();
+      loadCatalog();
+    } catch (err) {
+      showToast(err.message || "Error al guardar el vino.", "error");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = editingId ? "Guardar cambios" : "Añadir vino";
+    }
+  });
+
+  loadCatalog();
+</script>
+</body>
+</html>

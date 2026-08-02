@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/informacion-nutricional", "destination": "/nutricion.html" },
+    { "source": "/informacion-nutricional/:path*", "destination": "/nutricion.html" }
+  ]
+}
