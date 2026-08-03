@@ -224,6 +224,28 @@ async function handleWinesAPI(req, res, url) {
     return;
   }
 
+  if (req.method === "POST" && url === "/api/wines/reorder") {
+    try {
+      const { order } = await readJSONBody(req);
+      if (!Array.isArray(order) || !order.length) {
+        return sendJSON(res, 400, { ok: false, error: "Falta el nuevo orden." });
+      }
+
+      const wines = readWines();
+      const byId = new Map(wines.map((w) => [w.id, w]));
+      const reordered = order.map((id) => byId.get(id)).filter(Boolean);
+      for (const wine of wines) {
+        if (!order.includes(wine.id)) reordered.push(wine);
+      }
+
+      writeWines(reordered);
+      sendJSON(res, 200, { ok: true, wines: reordered });
+    } catch (err) {
+      sendJSON(res, 500, { ok: false, error: err.message });
+    }
+    return;
+  }
+
   const putMatch = req.method === "PUT" && url.match(/^\/api\/wines\/([^/]+)$/);
   if (putMatch) {
     const id = decodeURIComponent(putMatch[1]);

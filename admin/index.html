@@ -165,17 +165,40 @@
     gap: 18px;
   }
   .card {
+    position: relative;
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 16px;
     display: flex;
     flex-direction: column;
-    transition: border-color 0.2s ease, background 0.2s ease;
+    cursor: grab;
+    transition: border-color 0.2s ease, background 0.2s ease, opacity 0.15s ease;
   }
   .card:hover {
     background: var(--card-bg-hover);
     border-color: var(--border);
+  }
+  .card.dragging {
+    opacity: 0.35;
+    cursor: grabbing;
+  }
+  .card__grip {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3px;
+    padding: 6px;
+    border-radius: 6px;
+    background: #00000066;
+  }
+  .card__grip span {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--text-dim);
   }
   .card__image {
     aspect-ratio: 1 / 1;
@@ -451,6 +474,7 @@
       <div>
         <h1>Vinos</h1>
         <p id="count-label">Cargando catálogo…</p>
+        <p>Arrastra las tarjetas para cambiar el orden en la home.</p>
       </div>
       <button class="btn btn-primary" id="open-add">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
@@ -739,7 +763,10 @@
       data.wines.forEach((wine) => {
         const card = document.createElement("div");
         card.className = "card";
+        card.draggable = true;
+        card.dataset.id = wine.id;
         card.innerHTML = `
+          <div class="card__grip" title="Arrastra para reordenar"><span></span><span></span><span></span><span></span></div>
           <div class="card__image"><img src="${wine.bottle}" alt="${wine.nombre}" loading="lazy" /></div>
           <div class="badges">
             <span class="${badgeClass(wine.tipo)}">${wine.tipo}</span>
@@ -753,11 +780,72 @@
         `;
         card.querySelector(".edit").addEventListener("click", () => startEdit(wine));
         card.querySelector(".delete").addEventListener("click", () => removeWine(wine));
+        wireDrag(card);
         catalogEl.appendChild(card);
       });
     } catch (err) {
       countLabel.textContent = "";
       catalogEl.innerHTML = '<div class="error-state">No se pudo cargar el catálogo.</div>';
+    }
+  }
+
+  // ---------- Reordenar (arrastrar y soltar) ----------
+  let draggedCard = null;
+
+  function wireDrag(card) {
+    card.addEventListener("dragstart", () => {
+      draggedCard = card;
+      card.classList.add("dragging");
+    });
+    card.addEventListener("dragend", () => {
+      card.classList.remove("dragging");
+      draggedCard = null;
+      persistOrder();
+    });
+  }
+
+  function elementAfterDrag(x, y) {
+    const cards = [...catalogEl.querySelectorAll(".card:not(.dragging)")];
+    let closest = { distance: Infinity, element: null, after: false };
+    for (const card of cards) {
+      const box = card.getBoundingClientRect();
+      const cx = box.left + box.width / 2;
+      const cy = box.top + box.height / 2;
+      const distance = Math.hypot(x - cx, y - cy);
+      if (distance < closest.distance) {
+        closest = { distance, element: card, after: x > cx };
+      }
+    }
+    if (!closest.element) return null;
+    return closest.after ? closest.element.nextElementSibling : closest.element;
+  }
+
+  catalogEl.addEventListener("dragover", (e) => {
+    if (!draggedCard) return;
+    e.preventDefault();
+    const afterElement = elementAfterDrag(e.clientX, e.clientY);
+    if (afterElement === draggedCard) return;
+    if (afterElement == null) {
+      catalogEl.appendChild(draggedCard);
+    } else {
+      catalogEl.insertBefore(draggedCard, afterElement);
+    }
+  });
+
+  async function persistOrder() {
+    const order = [...catalogEl.querySelectorAll(".card")].map((c) => c.dataset.id);
+    try {
+      const res = await fetch("/api/wines/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      showToast("Orden guardado.");
+    } catch (err) {
+      showToast(err.message || "No se pudo guardar el orden.", "error");
+      loadCatalog();
     }
   }
 
