@@ -385,6 +385,10 @@ main.nutrition {
     margin-inline: calc(-1 * var(--edge));
     padding-inline: var(--edge);
     scrollbar-width: none;
+    /* Sin esto, cualquier scroll (rueda, trackpad, arrastre) puede
+       dejar una ficha a medias en el borde; con esto siempre se
+       queda encajada una ficha completa. */
+    scroll-snap-type: x mandatory;
     /* Sin esto, un hijo flex con overflow-x:auto empuja el ancho de
        main.nutrition (su padre, flex-direction:column) en vez de
        recortarse y hacer scroll interno. */
@@ -446,6 +450,7 @@ main.nutrition {
   .nutrition-entry {
     flex: 0 0 clamp(270px, 29vw, 360px);
     margin: 0;
+    scroll-snap-align: start;
   }
 }
 
