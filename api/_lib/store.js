@@ -126,6 +126,7 @@ function normalizeWine(id, bottle, data) {
     volumen: String(data.volumen || "750").trim(),
     bottle,
     sulfitos: String(data.sulfitos || "SIN SULFITOS AÑADIDOS").trim(),
+    ingredientes: String(data.ingredientes || "").trim(),
     descripcion: String(data.descripcion).trim(),
   };
   for (const field of NUTRITION_FIELDS) {

@@ -593,6 +593,13 @@
           <option value="CONTIENE SULFITOS">Contiene sulfitos</option>
         </select>
 
+        <label for="ingredientes">Ingredientes (información nutricional) — opcional</label>
+        <input type="text" id="ingredientes" placeholder="Se genera solo a partir de Sulfitos si lo dejas vacío" />
+        <p class="field-note">
+          Déjalo vacío para que se rellene solo ("Uvas" o "Uvas, conservante (SULFITOS)" según el
+          campo Sulfitos de arriba). Escríbelo solo si un vino tiene otros ingredientes.
+        </p>
+
         <label for="descripcion">Descripción (etiqueta / ficha técnica)</label>
         <textarea id="descripcion" required placeholder="Hecho 100% con uva de variedad..."></textarea>
 
@@ -635,9 +642,8 @@
         <p class="field-note">
           El alcohol de la tabla nutricional se toma solo del campo "Alcohol (%)" de arriba, y el
           valor energético en kJ se calcula solo a partir de las calorías (no hace falta
-          rellenarlo aparte). La columna de 150 ml (copa de referencia) también se calcula sola —
-          no hace falta rellenarla. Deja estos campos vacíos si aún no tienes el dato: la página
-          no mostrará números inventados, solo "pendiente de confirmar". Unidades en gramos (g),
+          rellenarlo aparte). Deja estos campos vacíos si aún no tienes el dato: la página no
+          mostrará números inventados, solo "pendiente de confirmar". Unidades en gramos (g),
           como exige el etiquetado nutricional en la UE — Proteínas y Sal ya no van en mg.
         </p>
 
@@ -834,6 +840,7 @@
     document.getElementById("alcohol").value = wine.alcohol;
     document.getElementById("volumen").value = wine.volumen;
     document.getElementById("sulfitos").value = wine.sulfitos;
+    document.getElementById("ingredientes").value = wine.ingredientes || "";
     document.getElementById("descripcion").value = wine.descripcion;
     document.getElementById("n-calorias").value = wine.calorias || "";
     document.getElementById("n-grasas").value = wine.grasas || "";
@@ -1019,6 +1026,7 @@
       alcohol: document.getElementById("alcohol").value.trim(),
       volumen: document.getElementById("volumen").value.trim(),
       sulfitos: document.getElementById("sulfitos").value,
+      ingredientes: document.getElementById("ingredientes").value.trim(),
       descripcion: document.getElementById("descripcion").value.trim(),
       calorias: document.getElementById("n-calorias").value.trim(),
       grasas: document.getElementById("n-grasas").value.trim(),

@@ -185,13 +185,13 @@ const NUTRITION_ROWS = [
   { key: "proteinas", label: "Proteínas (g)", decimals: 2 },
   { key: "sal", label: "Sal (g)", decimals: 2 },
 ];
-const SERVING_FACTOR = 1.5; // copa de referencia: 150 ml
-
 // Lista de ingredientes obligatoria (Rgto. UE 1169/2011 + 2021/2117):
 // el vino es "Uvas" + aditivos. El único aditivo que registramos hoy
 // es el conservante sulfitos, que además es alérgeno de declaración
 // obligatoria — por eso va resaltado en negrita/mayúsculas.
 function ingredientesLine(wine) {
+  const custom = String(wine.ingredientes || "").trim();
+  if (custom) return `Ingredientes: ${escapeHTML(custom)}`;
   const containsSulfitos = /CONTIENE SULFITOS/i.test(wine.sulfitos || "");
   return containsSulfitos
     ? `Ingredientes: Uvas, conservante (<strong>SULFITOS</strong>)`
@@ -215,7 +215,6 @@ function wineNutritionTable(wine) {
           <tr${trClass}>
             <th scope="row">${escapeHTML(row.label)}</th>
             <td>${escapeHTML(row.raw)}</td>
-            <td>${escapeHTML(row.raw)}</td>
           </tr>
         `;
       }
@@ -225,19 +224,14 @@ function wineNutritionTable(wine) {
           <tr${trClass}>
             <th scope="row">${escapeHTML(row.label)}</th>
             <td>—</td>
-            <td>—</td>
           </tr>
         `;
       }
       const value100 = row.energy ? formatEnergy(base) : formatNutritionValue(base, row.decimals);
-      const value150 = row.energy
-        ? formatEnergy(base * SERVING_FACTOR)
-        : formatNutritionValue(base * SERVING_FACTOR, row.decimals);
       return `
         <tr${trClass}>
           <th scope="row">${escapeHTML(row.label)}</th>
           <td>${escapeHTML(value100)}</td>
-          <td>${escapeHTML(value150)}</td>
         </tr>
       `;
     })
@@ -249,14 +243,12 @@ function wineNutritionTable(wine) {
         <tr>
           <th scope="col"></th>
           <th scope="col">100 ml</th>
-          <th scope="col">150 ml</th>
         </tr>
       </thead>
       <tbody>
         ${rowsHTML}
       </tbody>
     </table>
-    <p class="nutrition__note">Ración de referencia: copa de 150 ml.</p>
     <p class="ticket-ingredientes">${ingredientesLine(wine)}</p>
   `;
 }
