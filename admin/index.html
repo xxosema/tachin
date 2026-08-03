@@ -256,11 +256,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height: 30px;
-    padding: 3px;
+    width: 56px;
+    height: 56px;
+    padding: 5px;
     background: #f2f2f3;
-    border-radius: 7px;
+    border-radius: 9px;
     cursor: pointer;
     transition: background 0.15s ease;
   }
@@ -325,6 +325,7 @@
     z-index: 100;
   }
   .modal-overlay.is-open { display: flex; }
+  #qr-overlay { align-items: center; }
   .modal {
     background: var(--card-bg);
     border-radius: var(--radius);
@@ -913,7 +914,7 @@
         card.querySelector(".edit").addEventListener("click", () => startEdit(wine));
         card.querySelector(".delete").addEventListener("click", () => removeWine(wine));
         const qrThumb = card.querySelector(".card__qr");
-        drawQr(qrThumb.querySelector("canvas"), wineUrl(wine.id), { cellSize: 3, margin: 1 });
+        drawQr(qrThumb.querySelector("canvas"), wineUrl(wine.id), { cellSize: 4, margin: 1 });
         qrThumb.addEventListener("click", (e) => {
           e.stopPropagation();
           openQrModal(wine);
