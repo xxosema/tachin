@@ -11,8 +11,6 @@
     --card-bg: #ffffff;
     --card-bg-hover: #ffffff;
     --well: #141414;
-    --border: #e6e6e8;
-    --border-soft: #eeeeef;
     --accent: #141414;
     --accent-hover: #2b2b2b;
     --accent-wash: #14141410;
@@ -47,7 +45,6 @@
     width: 248px;
     flex-shrink: 0;
     background: var(--sidebar-bg);
-    border-right: 1px solid var(--border);
     padding: 20px 14px;
     display: flex;
     flex-direction: column;
@@ -163,12 +160,11 @@
   .btn-primary:hover { background: var(--accent-hover); }
   .btn-primary:active { transform: scale(0.98); }
   .btn-ghost {
-    background: #ffffff;
-    border: 1px solid var(--border);
+    background: #f2f2f3;
     color: var(--text);
-    border-radius: 10px;
+    border-radius: 100px;
   }
-  .btn-ghost:hover { border-color: #d5d5d8; background: #fafafa; }
+  .btn-ghost:hover { background: #e9e9ea; }
   .btn:disabled { opacity: 0.5; cursor: default; }
 
   /* ---------------- Card grid ---------------- */
@@ -180,18 +176,16 @@
   .card {
     position: relative;
     background: var(--card-bg);
-    border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 14px;
     display: flex;
     flex-direction: column;
     cursor: grab;
     box-shadow: var(--shadow);
-    transition: box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.15s ease;
+    transition: box-shadow 0.2s ease, opacity 0.15s ease;
   }
   .card:hover {
     box-shadow: var(--shadow-hover);
-    border-color: #dcdcdf;
   }
   .card.dragging {
     opacity: 0.4;
@@ -270,7 +264,6 @@
     margin-top: auto;
     display: flex;
     gap: 8px;
-    border-top: 1px solid var(--border-soft);
     padding-top: 12px;
   }
   .icon-btn {
@@ -280,7 +273,7 @@
     justify-content: center;
     gap: 6px;
     background: #f6f6f7;
-    border: 1px solid transparent;
+    border: 0;
     color: var(--text);
     border-radius: 100px;
     padding: 8px;
@@ -298,8 +291,8 @@
     color: var(--text-faint);
     font-size: 0.85rem;
     background: #fff;
-    border: 1px dashed var(--border);
     border-radius: var(--radius);
+    box-shadow: var(--shadow);
   }
 
   /* ---------------- Modal ---------------- */
@@ -318,7 +311,6 @@
   .modal-overlay.is-open { display: flex; }
   .modal {
     background: var(--card-bg);
-    border: 1px solid var(--border);
     border-radius: var(--radius);
     width: 100%;
     max-width: 560px;
@@ -352,20 +344,19 @@
   .modal__close:hover { background: #ececed; color: var(--text); }
 
   .dropzone {
-    border: 1px dashed var(--border);
     border-radius: 12px;
-    background: #fafafb;
+    background: #f2f2f3;
     padding: 28px 16px;
     text-align: center;
     font-size: 0.78rem;
     color: var(--text-dim);
     cursor: pointer;
     margin-bottom: 20px;
-    transition: border-color 0.2s ease, background 0.2s ease;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
   }
   .dropzone.is-dragover {
-    border-color: var(--accent);
     background: var(--accent-wash);
+    box-shadow: inset 0 0 0 2px var(--accent);
   }
   .dropzone img {
     max-width: 140px;
@@ -387,9 +378,7 @@
   }
   label:first-of-type { margin-top: 0; }
   .section-divider {
-    margin: 26px 0 4px;
-    padding-top: 18px;
-    border-top: 1px solid var(--border);
+    margin: 34px 0 4px;
     font-size: 0.7rem;
     font-weight: 700;
     color: var(--text-dim);
@@ -402,19 +391,18 @@
   }
   input[type="text"], select, textarea {
     width: 100%;
-    background: #fafafb;
-    border: 1px solid var(--border);
+    background: #f2f2f3;
     color: var(--text);
     font-family: var(--font);
     font-size: 0.85rem;
     padding: 10px 12px;
     border-radius: 10px;
   }
-  input[readonly] { color: var(--text-faint); background: #f2f2f3; }
+  input[readonly] { color: var(--text-faint); background: #ececed; }
   input:focus, select:focus, textarea:focus {
     outline: none;
-    border-color: var(--text);
     background: #fff;
+    box-shadow: 0 0 0 2px var(--text);
   }
   textarea { min-height: 90px; resize: vertical; }
   .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
@@ -443,7 +431,6 @@
     right: 20px;
     max-width: 320px;
     background: #fff;
-    border: 1px solid var(--border);
     border-left: 3px solid var(--accent);
     border-radius: 12px;
     padding: 13px 16px;
@@ -466,8 +453,6 @@
       flex-direction: row;
       align-items: center;
       padding: 14px 16px;
-      border-right: 0;
-      border-bottom: 1px solid var(--border);
       position: static;
       height: auto;
     }
