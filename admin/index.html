@@ -527,8 +527,6 @@
     <div class="page-head">
       <div>
         <h1>Vinos</h1>
-        <p id="count-label">Cargando catálogo…</p>
-        <p>Arrastra las tarjetas para cambiar el orden en la home.</p>
       </div>
       <button class="btn btn-primary" id="open-add">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
@@ -677,7 +675,6 @@
 <script src="/admin/qrcode.js"></script>
 <script>
   const catalogEl = document.getElementById("catalog");
-  const countLabel = document.getElementById("count-label");
   const overlay = document.getElementById("modal-overlay");
   const modalTitle = document.getElementById("modal-title");
   const form = document.getElementById("wine-form");
@@ -889,10 +886,6 @@
       const data = await res.json();
       if (!data.ok) throw new Error(data.error);
 
-      countLabel.textContent = data.wines.length
-        ? `${data.wines.length} vino${data.wines.length === 1 ? "" : "s"} en el catálogo`
-        : "Todavía no hay vinos";
-
       if (!data.wines.length) {
         catalogEl.innerHTML = '<div class="empty-state">Todavía no hay vinos. Añade el primero.</div>';
         return;
@@ -930,7 +923,6 @@
         catalogEl.appendChild(card);
       });
     } catch (err) {
-      countLabel.textContent = "";
       catalogEl.innerHTML = '<div class="error-state">No se pudo cargar el catálogo.</div>';
     }
   }
