@@ -314,20 +314,13 @@ main.detail {
   display: none;
 }
 
-/* Móvil: sin "Vino honesto, sin nada añadido" y salto de línea
-   forzado tras "Galicia" (queda: dirección / contacto, en 2 líneas). */
+/* Móvil: mismos datos que en escritorio, con un salto de línea
+   forzado tras "Galicia" (queda: bodega/dirección / contacto, en 2
+   líneas) en vez de todo seguido en una sola. */
 @media (max-width: 860px) {
-  .footer-tagline {
-    display: none;
-  }
-
   .footer-break {
     display: block;
     content: "";
-  }
-
-  .footer-sep {
-    display: none;
   }
 }
 
@@ -350,6 +343,14 @@ main.nutrition {
   align-items: center;
   text-align: center;
   text-transform: uppercase;
+}
+
+/* Móvil: menos margen lateral que --edge (24px) para que la ficha
+   quede un poco más ancha. */
+@media (max-width: 860px) {
+  main.nutrition {
+    padding-inline: 14px;
+  }
 }
 
 @media (min-width: 861px) {
