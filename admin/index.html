@@ -223,8 +223,9 @@
   .card__image img { width: 100%; height: 100%; object-fit: contain; }
   .badges {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 6px;
-    flex-wrap: wrap;
     margin-bottom: 10px;
   }
   .badge {
@@ -250,6 +251,21 @@
     background: var(--blanco-wash);
     color: var(--blanco);
   }
+  .card__qr {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 3px;
+    background: #f2f2f3;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .card__qr:hover { background: #e9e9ea; }
+  .card__qr canvas { width: 100%; height: 100%; display: block; }
   .card__name {
     font-size: 0.95rem;
     font-weight: 700;
@@ -342,6 +358,28 @@
     justify-content: center;
   }
   .modal__close:hover { background: #ececed; color: var(--text); }
+
+  .qr-modal { max-width: 340px; text-align: center; }
+  .qr-modal__body canvas {
+    width: 220px;
+    height: 220px;
+    margin: 4px auto 16px;
+    padding: 14px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+  }
+  .qr-modal__url {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    word-break: break-all;
+    margin: 0 0 20px;
+  }
+  .qr-modal__actions {
+    display: flex;
+    gap: 10px;
+  }
+  .qr-modal__actions .btn { flex: 1; justify-content: center; }
 
   .dropzone {
     border-radius: 12px;
@@ -610,8 +648,26 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="qr-overlay">
+    <div class="modal qr-modal">
+      <div class="modal__head">
+        <h2 id="qr-title">QR</h2>
+        <button class="modal__close" id="qr-close" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="qr-modal__body">
+        <canvas id="qr-canvas"></canvas>
+        <p class="qr-modal__url" id="qr-url"></p>
+        <div class="qr-modal__actions">
+          <button type="button" class="btn btn-ghost" id="qr-copy">Copiar URL</button>
+          <button type="button" class="btn btn-primary" id="qr-download">Descargar PNG</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
+<script src="/admin/qrcode.js"></script>
 <script>
   const catalogEl = document.getElementById("catalog");
   const countLabel = document.getElementById("count-label");
@@ -627,6 +683,10 @@
   const uvaInput = document.getElementById("uva");
   const uvaCortaInput = document.getElementById("uva-corta");
   const toast = document.getElementById("toast");
+  const qrOverlay = document.getElementById("qr-overlay");
+  const qrTitle = document.getElementById("qr-title");
+  const qrCanvas = document.getElementById("qr-canvas");
+  const qrUrlEl = document.getElementById("qr-url");
 
   const DROP_PLACEHOLDER = "Arrastra aquí el GIF/imagen de la botella<br />o haz clic para elegirlo";
 
@@ -660,7 +720,63 @@
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && overlay.classList.contains("is-open")) closeModal();
+    if (e.key === "Escape" && qrOverlay.classList.contains("is-open")) closeQrModal();
   });
+
+  // ---------- QR ----------
+  function wineUrl(id) {
+    return `${location.origin}/vino.html?id=${encodeURIComponent(id)}`;
+  }
+  function drawQr(canvas, text, { cellSize, margin }) {
+    const qr = qrcode(0, "M");
+    qr.addData(text);
+    qr.make();
+    const count = qr.getModuleCount();
+    const size = (count + margin * 2) * cellSize;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, size, size);
+    ctx.save();
+    ctx.translate(margin * cellSize, margin * cellSize);
+    qr.renderTo2dContext(ctx, cellSize);
+    ctx.restore();
+  }
+  let qrCurrentUrl = null;
+  let qrCurrentId = null;
+  function openQrModal(wine) {
+    qrCurrentUrl = wineUrl(wine.id);
+    qrCurrentId = wine.id;
+    qrTitle.textContent = wine.nombre;
+    qrUrlEl.textContent = qrCurrentUrl;
+    drawQr(qrCanvas, qrCurrentUrl, { cellSize: 8, margin: 3 });
+    qrOverlay.classList.add("is-open");
+    document.body.style.overflow = "hidden";
+  }
+  function closeQrModal() {
+    qrOverlay.classList.remove("is-open");
+    document.body.style.overflow = "";
+  }
+  document.getElementById("qr-close").addEventListener("click", closeQrModal);
+  qrOverlay.addEventListener("click", (e) => {
+    if (e.target === qrOverlay) closeQrModal();
+  });
+  document.getElementById("qr-copy").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(qrCurrentUrl);
+      showToast("URL copiada.");
+    } catch (err) {
+      showToast("No se pudo copiar la URL.", "error");
+    }
+  });
+  document.getElementById("qr-download").addEventListener("click", () => {
+    const link = document.createElement("a");
+    link.download = `qr-${qrCurrentId}.png`;
+    link.href = qrCanvas.toDataURL("image/png");
+    link.click();
+  });
+
   document.getElementById("open-add").addEventListener("click", () => {
     stopEdit();
     openModal();
@@ -785,6 +901,7 @@
           <div class="card__image"><img src="${wine.bottle}" alt="${wine.nombre}" loading="lazy" /></div>
           <div class="badges">
             <span class="${badgeClass(wine.tipo)}">${wine.tipo}</span>
+            <span class="card__qr" title="Ver / descargar QR"><canvas></canvas></span>
           </div>
           <div class="card__name">${wine.nombre}</div>
           <div class="card__meta">${wine.anada} · ${wine.alcohol}% vol · ${wine.id}</div>
@@ -795,6 +912,12 @@
         `;
         card.querySelector(".edit").addEventListener("click", () => startEdit(wine));
         card.querySelector(".delete").addEventListener("click", () => removeWine(wine));
+        const qrThumb = card.querySelector(".card__qr");
+        drawQr(qrThumb.querySelector("canvas"), wineUrl(wine.id), { cellSize: 3, margin: 1 });
+        qrThumb.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openQrModal(wine);
+        });
         wireDrag(card);
         catalogEl.appendChild(card);
       });
