@@ -309,6 +309,11 @@ async function renderNutrition() {
   `;
 
   setupCarousel(document.getElementById("nutrition-grid"));
+
+  if (location.hash) {
+    const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (target) target.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {

@@ -359,10 +359,10 @@
   }
   .modal__close:hover { background: #ececed; color: var(--text); }
 
-  .qr-modal { max-width: 340px; text-align: center; }
+  .qr-modal { max-width: 380px; text-align: center; }
   .qr-modal__body canvas {
-    width: 220px;
-    height: 220px;
+    width: 280px;
+    height: 280px;
     margin: 4px auto 16px;
     padding: 14px;
     background: #fff;
@@ -725,7 +725,7 @@
 
   // ---------- QR ----------
   function wineUrl(id) {
-    return `${location.origin}/vino.html?id=${encodeURIComponent(id)}`;
+    return `${location.origin}/informacion-nutricional#${encodeURIComponent(id)}`;
   }
   function drawQr(canvas, text, { cellSize, margin }) {
     const qr = qrcode(0, "M");
@@ -750,7 +750,7 @@
     qrCurrentId = wine.id;
     qrTitle.textContent = wine.nombre;
     qrUrlEl.textContent = qrCurrentUrl;
-    drawQr(qrCanvas, qrCurrentUrl, { cellSize: 8, margin: 3 });
+    drawQr(qrCanvas, qrCurrentUrl, { cellSize: 10, margin: 3 });
     qrOverlay.classList.add("is-open");
     document.body.style.overflow = "hidden";
   }
