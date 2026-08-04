@@ -1,12 +1,15 @@
 /**
- * TACHÍN — protección del panel admin (HTTP Basic Auth).
+ * TACHÍN — protección del panel admin (login propio + cookie de
+ * sesión firmada, en vez del diálogo nativo de Basic Auth).
  *
  * Cubre /admin (la página) y /api/wines* salvo el GET (que tiene que
- * quedar público: es como el propio sitio carga el catálogo).
+ * quedar público: es como el propio sitio carga el catálogo) y la
+ * propia pantalla de login (si no, nadie podría llegar a ella).
  *
  * Usuario y contraseña en las variables de entorno ADMIN_USER /
- * ADMIN_PASS de Vercel. Si no están definidas, usa las de abajo por
- * defecto — para producción, configúralas en el proyecto de Vercel.
+ * ADMIN_PASS de Vercel (api/login.js las valida). La cookie se firma
+ * con SESSION_SECRET — configúrala también en Vercel; si no está
+ * definida se usa un valor por defecto (solo vale para desarrollo).
  */
 
 import { next } from "@vercel/edge";
@@ -15,14 +18,40 @@ export const config = {
   matcher: ["/admin/:path*", "/api/wines/:path*"],
 };
 
-function unauthorized() {
-  return new Response("Autenticación requerida.", {
-    status: 401,
-    headers: { "WWW-Authenticate": 'Basic realm="Tachin Admin"' },
-  });
+const COOKIE_NAME = "tachin_session";
+const LOGIN_PATHS = ["/admin/login", "/admin/login.html"];
+
+function getSecret() {
+  return process.env.SESSION_SECRET || "tachin-dev-secret-cambia-esto-en-produccion";
 }
 
-export default function middleware(request) {
+function getCookie(request, name) {
+  const cookie = request.headers.get("cookie") || "";
+  const match = cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+async function hmacHex(message, secret) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, [
+    "sign",
+  ]);
+  const signature = await crypto.subtle.sign("HMAC", key, enc.encode(message));
+  return [...new Uint8Array(signature)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function hasValidSession(request) {
+  const token = getCookie(request, COOKIE_NAME);
+  if (!token) return false;
+  const [payload, signature] = token.split(".");
+  if (!payload || !signature) return false;
+  const expected = await hmacHex(payload, getSecret());
+  if (expected !== signature) return false;
+  const expires = parseInt(payload, 10);
+  return Boolean(expires) && Date.now() / 1000 < expires;
+}
+
+export default async function middleware(request) {
   const { pathname } = new URL(request.url);
 
   // Lectura pública del catálogo: sin login.
@@ -30,23 +59,21 @@ export default function middleware(request) {
     return next();
   }
 
-  const authHeader = request.headers.get("authorization") || "";
-  const [scheme, encoded] = authHeader.split(" ");
-  if (scheme !== "Basic" || !encoded) return unauthorized();
-
-  let decoded;
-  try {
-    decoded = atob(encoded);
-  } catch (err) {
-    return unauthorized();
+  // La pantalla de login tiene que poder verse sin sesión.
+  if (LOGIN_PATHS.includes(pathname)) {
+    return next();
   }
-  const sep = decoded.indexOf(":");
-  const user = decoded.slice(0, sep);
-  const pass = decoded.slice(sep + 1);
 
-  const expectedUser = process.env.ADMIN_USER || "tachin";
-  const expectedPass = process.env.ADMIN_PASS || "TachinVino2026!";
-  if (user !== expectedUser || pass !== expectedPass) return unauthorized();
+  if (await hasValidSession(request)) {
+    return next();
+  }
 
-  return next();
+  if (pathname.startsWith("/admin")) {
+    return Response.redirect(new URL("/admin/login", request.url), 307);
+  }
+
+  return new Response(JSON.stringify({ ok: false, error: "Sesión no válida. Vuelve a iniciar sesión." }), {
+    status: 401,
+    headers: { "Content-Type": "application/json" },
+  });
 }

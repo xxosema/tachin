@@ -16,12 +16,14 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
+const { COOKIE_NAME, MAX_AGE_SECONDS, createSessionToken, verifySessionToken, parseCookie } = require("../api/_lib/session");
 
 const ROOT = path.join(__dirname, "..");
 const SEED_FILE = path.join(__dirname, "seed-wines.json");
 const LOCAL_DATA_FILE = path.join(__dirname, ".local-wines.json");
 const BOTTLES_DIR = path.join(ROOT, "assets", "bottles");
 const ADMIN_HTML = path.join(ROOT, "admin", "index.html");
+const ADMIN_LOGIN_HTML = path.join(ROOT, "admin", "login.html");
 const PORT = process.env.PORT || 4000;
 
 const ADMIN_USER = process.env.ADMIN_USER || "tachin";
@@ -143,25 +145,26 @@ function normalizeWine(id, bottle, data) {
 }
 
 // ---------------------------------------------------------------------
-// Auth (mismo esquema que middleware.js)
+// Auth (mismo esquema que middleware.js: cookie de sesión firmada,
+// en vez de Basic Auth)
 // ---------------------------------------------------------------------
 
 function isAuthorized(req) {
-  const header = req.headers.authorization || "";
-  const [scheme, encoded] = header.split(" ");
-  if (scheme !== "Basic" || !encoded) return false;
-  const decoded = Buffer.from(encoded, "base64").toString("utf8");
-  const sep = decoded.indexOf(":");
-  return decoded.slice(0, sep) === ADMIN_USER && decoded.slice(sep + 1) === ADMIN_PASS;
+  return verifySessionToken(parseCookie(req.headers.cookie, COOKIE_NAME));
 }
 
-function requireAuth(req, res) {
+// Para /admin: si no hay sesión, redirige a la pantalla de login.
+function requireAuthPage(req, res) {
   if (isAuthorized(req)) return true;
-  res.writeHead(401, {
-    "WWW-Authenticate": 'Basic realm="Tachin Admin"',
-    "Content-Type": "text/plain; charset=utf-8",
-  });
-  res.end("Autenticación requerida.");
+  res.writeHead(302, { Location: "/admin/login" });
+  res.end();
+  return false;
+}
+
+// Para /api/wines*: si no hay sesión, error JSON (lo consume el fetch del panel).
+function requireAuthAPI(req, res) {
+  if (isAuthorized(req)) return true;
+  sendJSON(res, 401, { ok: false, error: "Sesión no válida. Vuelve a iniciar sesión." });
   return false;
 }
 
@@ -203,7 +206,7 @@ async function handleWinesAPI(req, res, url) {
     return;
   }
 
-  if (!requireAuth(req, res)) return;
+  if (!requireAuthAPI(req, res)) return;
 
   if (req.method === "POST" && url === "/api/wines") {
     try {
@@ -325,8 +328,21 @@ function serveStatic(req, res, url) {
 const server = http.createServer((req, res) => {
   const url = decodeURI(req.url.split("?")[0]);
 
+  if (url === "/admin/login" || url === "/admin/login.html") {
+    fs.readFile(ADMIN_LOGIN_HTML, (err, content) => {
+      if (err) {
+        res.writeHead(500);
+        res.end("No se pudo cargar admin/login.html");
+        return;
+      }
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      res.end(content);
+    });
+    return;
+  }
+
   if (url === "/admin" || url === "/admin/") {
-    if (!requireAuth(req, res)) return;
+    if (!requireAuthPage(req, res)) return;
     fs.readFile(ADMIN_HTML, (err, content) => {
       if (err) {
         res.writeHead(500);
@@ -336,6 +352,26 @@ const server = http.createServer((req, res) => {
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
       res.end(content);
     });
+    return;
+  }
+
+  if (url === "/api/login" && req.method === "POST") {
+    readJSONBody(req)
+      .then(({ user, pass }) => {
+        if (user !== ADMIN_USER || pass !== ADMIN_PASS) {
+          return sendJSON(res, 401, { ok: false, error: "Usuario o contraseña incorrectos." });
+        }
+        const token = createSessionToken();
+        res.setHeader("Set-Cookie", `${COOKIE_NAME}=${token}; Path=/; Max-Age=${MAX_AGE_SECONDS}; HttpOnly; SameSite=Lax`);
+        sendJSON(res, 200, { ok: true });
+      })
+      .catch((err) => sendJSON(res, 400, { ok: false, error: err.message }));
+    return;
+  }
+
+  if (url === "/api/logout" && req.method === "POST") {
+    res.setHeader("Set-Cookie", `${COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax`);
+    sendJSON(res, 200, { ok: true });
     return;
   }
 
@@ -358,5 +394,5 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`TACHÍN (preview local) en http://localhost:${PORT}`);
-  console.log(`Panel admin en http://localhost:${PORT}/admin  (usuario: ${ADMIN_USER})`);
+  console.log(`Panel admin en http://localhost:${PORT}/admin/login  (usuario: ${ADMIN_USER})`);
 });

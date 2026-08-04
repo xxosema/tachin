@@ -39,7 +39,7 @@ git push -u origin main
 2. **Create Database → Blob** → dale un nombre y **Connect** al proyecto.
 3. Esto añade automáticamente la variable de entorno `BLOB_READ_WRITE_TOKEN` — no tienes que copiarla a mano.
 
-## 4. Configurar el usuario y contraseña del panel
+## 4. Configurar el usuario, contraseña y clave de sesión del panel
 
 En el proyecto de Vercel: **Settings → Environment Variables**, añade:
 
@@ -47,6 +47,9 @@ En el proyecto de Vercel: **Settings → Environment Variables**, añade:
 |---|---|
 | `ADMIN_USER` | el usuario que quieras (ej. `tachin`) |
 | `ADMIN_PASS` | una contraseña segura, cámbiala del valor de pruebas actual |
+| `SESSION_SECRET` | una cadena larga y aleatoria (ej. genera una en [1password.com/password-generator](https://1password.com/password-generator/) o similar, 40+ caracteres) |
+
+`SESSION_SECRET` es importante: es la clave con la que se firma la cookie de sesión del login (`/admin/login`). Si no la configuras, el sitio usa un valor por defecto que está en el código público — cualquiera podría fabricarse una sesión válida sin conocer la contraseña. Configúrala antes de dar por terminado el despliegue.
 
 Guarda y vuelve a desplegar (Deployments → el último → botón "Redeploy") para que las variables se apliquen.
 
@@ -71,7 +74,7 @@ Deberías ver "Listo: 6 vinos migrados a Vercel Blob." al final. **No lo vuelvas
 ## 6. Comprobar que todo funciona
 
 - Sitio: `https://tu-proyecto.vercel.app`
-- Panel: `https://tu-proyecto.vercel.app/admin` (te pedirá el usuario/contraseña del paso 4)
+- Panel: `https://tu-proyecto.vercel.app/admin` (te llevará a una pantalla de login propia con el usuario/contraseña del paso 4)
 - Info nutricional: `https://tu-proyecto.vercel.app/informacion-nutricional`
 
 ## 7. Conectar tu dominio (tachinadega.com)

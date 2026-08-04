@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TACHÍN — Iniciar sesión</title>
+<style>
+  :root {
+    --bg: #f5f5f6;
+    --card-bg: #ffffff;
+    --text: #16161a;
+    --text-dim: #6b6b70;
+    --text-faint: #9d9da2;
+    --accent: #141414;
+    --accent-hover: #2b2b2b;
+    --danger: #c4342b;
+    --danger-wash: #c4342b12;
+    --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    font-family: var(--font);
+    color: var(--text);
+    padding: 16px;
+  }
+  .login-card {
+    width: 100%;
+    max-width: 340px;
+    background: var(--card-bg);
+    border-radius: 18px;
+    box-shadow: 0 24px 48px rgba(20, 20, 20, 0.1);
+    padding: 32px 28px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 4px;
+  }
+  .brand__dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .login-card p {
+    margin: 0 0 24px;
+    font-size: 0.78rem;
+    color: var(--text-faint);
+  }
+  label {
+    display: block;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin: 16px 0 6px;
+  }
+  label:first-of-type {
+    margin-top: 0;
+  }
+  input {
+    width: 100%;
+    background: #f2f2f3;
+    border: 0;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 0.9rem;
+    padding: 11px 12px;
+    border-radius: 10px;
+  }
+  input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--text);
+    background: #fff;
+  }
+  button {
+    width: 100%;
+    margin-top: 22px;
+    border: 0;
+    border-radius: 100px;
+    padding: 12px;
+    font-family: var(--font);
+    font-size: 0.85rem;
+    font-weight: 700;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+  }
+  button:hover {
+    background: var(--accent-hover);
+  }
+  button:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .error {
+    display: none;
+    margin-top: 14px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--danger-wash);
+    color: var(--danger);
+    font-size: 0.78rem;
+  }
+  .error.is-visible {
+    display: block;
+  }
+</style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="brand"><span class="brand__dot"></span> Tachín</div>
+    <p>Panel de administración</p>
+    <form id="login-form">
+      <label for="user">Usuario</label>
+      <input type="text" id="user" autocomplete="username" required />
+      <label for="pass">Contraseña</label>
+      <input type="password" id="pass" autocomplete="current-password" required />
+      <div class="error" id="error">Usuario o contraseña incorrectos.</div>
+      <button type="submit" id="submit-btn">Iniciar sesión</button>
+    </form>
+  </div>
+
+<script>
+  const form = document.getElementById("login-form");
+  const errorBox = document.getElementById("error");
+  const submitBtn = document.getElementById("submit-btn");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorBox.classList.remove("is-visible");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Entrando…";
+
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user: document.getElementById("user").value.trim(),
+          pass: document.getElementById("pass").value,
+        }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Usuario o contraseña incorrectos.");
+      window.location.href = "/admin";
+    } catch (err) {
+      errorBox.textContent = err.message || "Usuario o contraseña incorrectos.";
+      errorBox.classList.add("is-visible");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Iniciar sesión";
+    }
+  });
+</script>
+</body>
+</html>

@@ -518,6 +518,10 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3h7v7M21 3l-9 9M5 5h6M5 5v14h14v-6"/></svg>
         Ver sitio
       </a>
+      <a href="#" id="logout-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Cerrar sesión
+      </a>
     </nav>
     <div class="sidebar__foot">DESARROLLADO POR XOSE RODRIGUEZ PARA TACHÍN. 2026®</div>
   </aside>
@@ -1054,6 +1058,12 @@
       submitBtn.disabled = false;
       submitBtn.textContent = editingId ? "Guardar cambios" : "Añadir vino";
     }
+  });
+
+  document.getElementById("logout-link").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await fetch("/api/logout", { method: "POST" });
+    window.location.href = "/admin/login";
   });
 
   loadCatalog();
